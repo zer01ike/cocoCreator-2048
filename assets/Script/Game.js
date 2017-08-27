@@ -26,51 +26,52 @@ cc.Class({
 
     // use this for initialization
     onLoad: function () {
-
+        // TODO:添加触摸事件
+        
         //注册键盘事件
         cc.systemEvent.on(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
         cc.systemEvent.on(cc.SystemEvent.EventType.KEY_UP, this.onKeyUp, this);
 
+        //关闭边缘模糊
+        cc.view.enableAntiAlias(false);
+
+        // 初始化场景
+        this.initGameScene();
+
+        //设置全局卡片的大小
+        Global.card_size=cc.winSize.width/4;
+
+        //开始游戏输出两个卡片
+        this.initdrawcard();
+    },
+
+    initGameScene:function(){
         //define the center of the gameboard 
         //需要保证竖屏玩耍，未做横屏适配
         //以后的card的位置均以gameboard为中心算出
+
+        //获取游戏面板的中心点
         this.gameboard_x=0;
         this.gameboard_y=cc.winSize.width/2-cc.winSize.height/2;
 
+        //定义分数面板的大小和位置
         this.scoreBg.width=cc.winSize.width;
-        this.scoreBg.height=this.scoreBg.width/4;
+        this.scoreBg.height=this.scoreBg.width/2;
         this.scoreBg.setPosition(0,cc.winSize.height/2-this.scoreBg.height/2);
 
-        // console.log("winsize.w="+cc.winSize.width+"  winsize.h="+cc.winSize.height);
-        // console.log("gameboard_x="+this.gameboard_x+"  gameboard_y="+this.gameboard_y);
-
-        //init the game board for card!
+        //定义游戏面板的大小和位置
         this.cardBg.width=cc.winSize.width;
         this.cardBg.height=this.cardBg.width;
-        //this.cardBg.height=cc.winSize.height;
         this.cardBg.setPosition(this.gameboard_x,this.gameboard_y);
-        //this.cardBg.setPosition(0,0);
-
-        this.cardBg.color=new cc.Color(0,100,100);
-
-
-        Global.card_size=cc.winSize.width/4;
-
-        //this.drawSingleCard(1024,0,0);
-        //this.drawSingleCard(1024,2,0);
-
-        this.initdrawcard();
-
-        
-
-        console.log("end loading cards");
+        this.cardBg.color=new cc.Color(187,173,161);
     },
 
+    //在指定的16宫格的位置上画一个方块，并给定其要显示的数字num
     drawSingleCard: function(num,col,row){
         var singlecard = cc.instantiate(this.cardPre);
         var size = Global.card_size;
-        singlecard.width=size-1;
-        singlecard.height=size-1;
+        singlecard.width=size-3;
+        singlecard.height=size-3;
         var temp_postion_x=(this.gameboard_x-2*size)+col*size+size/2;
         var temp_postion_y=(this.gameboard_y-size)+row*size+size/2;
         singlecard.setPosition(temp_postion_x,temp_postion_y);
@@ -251,83 +252,24 @@ cc.Class({
     cardColor: function(col,row){
         //改变位置所指定的卡片的颜色
         var num = Global.cards[col][row];
-        var final_color=null;
-        switch(num){
-            case 0:
-                return null;
-                break;
-            case 2:
-                final_color=Global.level1;
-                break;
-            case 4:
-                final_color=Global.level2;
-                break;
-            case 8:
-                final_color=Global.level3;
-                break;
-            case 16:
-                final_color=Global.level4;
-                break;
-            case 32:
-                final_color=Global.level5;
-                break;
-            case 64:
-                final_color=Global.level6;
-                break;
-            case 128:
-                final_color=Global.level7;
-                break;
-            case 256:
-                final_color=Global.level8;
-                break;
-            case 512:
-                final_color=Global.level9;
-                break;
-            case 1024:
-                final_color=Global.level10;
-                break;
-            case 2048:
-                final_color=Global.level11;
-                break;
-            case 4096:
-                final_color=Global.level12;
-                break;
-            case 8128:
-                final_color=Global.level13;
-                break;
+        if(num==0){
+            return null;
+        }else{
+            Global.cardsEntity[col][row].color=Global.colors[num];
         }
-        Global.cardsEntity[col][row].color=final_color;
+        
     },
 
     calculateScore:function(){
+        var temp_score=0;
         for(var col=0;col<4;col++){
             for(var row=0;row<4;row++){
                 var num= Global.cards[col][row];
-                if(num==4){
-                    Global.score+=num*2;
-                }else if(num==8){
-                    Global.score+=num*4;
-                }else if(num==16){
-                    Global.score+=num*6;
-                }else if(num==32){
-                    Global.score+=num*8;
-                }else if(num==64){
-                    Global.score+=num*9;
-                }else if(num==128){
-                    Global.score+=num*10;
-                }else if(num==256){
-                    Global.score+=num*11;
-                }else if(num==512){
-                    Global.score+=num*12;
-                }else if(num==1024){
-                    Global.score+=num*13;
-                }else if(num==2048){
-                    Global.score+=num*14;
-                }
+                if(num>0) temp_score+=num*2-4;
             }
         }
-
         //计算完分数显示在label上
+        Global.score=temp_score;
         this.score_label.string=Global.score;
     },
 
