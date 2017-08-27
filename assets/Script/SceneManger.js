@@ -11,7 +11,7 @@ cc.Class({
     },
 
     _changescene: function(event){
-        cc.director.loadScene("Game");
+        cc.director.loadScene("GameScene");
         console.log('MOUSE DOWN');
     },
 

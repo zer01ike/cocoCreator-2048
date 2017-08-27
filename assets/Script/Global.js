@@ -31,5 +31,4 @@ module.exports = {
     level11:new cc.color(255,0,0),
     level12:new cc.color(0,0,0),
     level13:new cc.color(0,255,0)
-
 };

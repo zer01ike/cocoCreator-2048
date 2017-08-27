@@ -1,2 +1,3 @@
-# hello-world
-Hello world new project template.
+# simple 2048 game
+created by cocoCreator 
+
