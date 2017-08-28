@@ -20,8 +20,6 @@ cc.Class({
             default:null,
             type:cc.Label
         },
-        gameboard_x:0,
-        gameboard_y:0,
     },
 
     // use this for initialization
@@ -31,6 +29,8 @@ cc.Class({
         //注册键盘事件
         cc.systemEvent.on(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
         cc.systemEvent.on(cc.SystemEvent.EventType.KEY_UP, this.onKeyUp, this);
+
+        this.TouchManger();
 
         //关闭边缘模糊
         cc.view.enableAntiAlias(false);
@@ -43,6 +43,13 @@ cc.Class({
 
         //开始游戏输出两个卡片
         this.initdrawcard();
+
+        //testing for card_location
+        // for(var col=0;col<4;col++){
+        //     for(var row =0;row<4;row++){
+        //         this.drawSingleCard(1024,col,row);
+        //     }
+        // }
     },
 
     initGameScene:function(){
@@ -50,40 +57,50 @@ cc.Class({
         //需要保证竖屏玩耍，未做横屏适配
         //以后的card的位置均以gameboard为中心算出
 
-        //获取游戏面板的中心点
-        this.gameboard_x=0;
-        this.gameboard_y=cc.winSize.width/2-cc.winSize.height/2;
-
         //定义分数面板的大小和位置
         this.scoreBg.width=cc.winSize.width;
-        this.scoreBg.height=this.scoreBg.width/2;
-        this.scoreBg.setPosition(0,cc.winSize.height/2-this.scoreBg.height/2);
+        this.scoreBg.height=cc.winSize.height-cc.winSize.width;
 
         //定义游戏面板的大小和位置
         this.cardBg.width=cc.winSize.width;
         this.cardBg.height=this.cardBg.width;
-        this.cardBg.setPosition(this.gameboard_x,this.gameboard_y);
         this.cardBg.color=new cc.Color(187,173,161);
+
     },
 
     //在指定的16宫格的位置上画一个方块，并给定其要显示的数字num
     drawSingleCard: function(num,col,row){
         var singlecard = cc.instantiate(this.cardPre);
+        this.cardBg.addChild(singlecard);
         var size = Global.card_size;
         singlecard.width=size-3;
         singlecard.height=size-3;
-        var temp_postion_x=(this.gameboard_x-2*size)+col*size+size/2;
-        var temp_postion_y=(this.gameboard_y-size)+row*size+size/2;
+        //test
+        var temp_postion_x=(col-3/2)*size;
+        var temp_postion_y=(row-3/2)*size;
         singlecard.setPosition(temp_postion_x,temp_postion_y);
         singlecard.getComponent("Card").numLabel.string=num;
         Global.cards[col][row]=num;
         Global.cardsEntity[col][row]=singlecard;
         this.cardColor(col,row);
         //Global.cardsEntity[col][row].getComponent("Card").numLabel.string=5;
-        this.cardBg.addChild(singlecard);
     },
 
     initdrawcard: function(){
+        //删除所有数组中的值的全局所存储的值
+        this.score_label.string=0;
+        for(var col =0;col<4;col++){
+            for(var row =0 ;row<4;row++){
+                Global.cards[col][row]=0;
+                if(Global.cardsEntity[col][row]!=null){
+                    Global.cardsEntity[col][row].destroy();
+                }
+                Global.cardsEntity[col][row]=null;
+            }
+        }
+
+        Global.score=0;
+
         this.randomCard();
         this.randomCard();
     },
@@ -242,11 +259,18 @@ cc.Class({
         //设置显示字符
         Global.cardsEntity[col][row].getComponent("Card").numLabel.string=Global.cards[col][row];
         this.cardColor(col,row);
-        //设置显示位置
-        // var size = Global.card_size;
-        // var temp_postion_x=(this.gameboard_x-2*size)+col*size+size/2;
-        // var temp_postion_y=(this.gameboard_y-size)+row*size+size/2;
-        // Global.cardsEntity[col][row].setPosition(temp_postion_x,temp_postion_y);
+    },
+
+    moveCard:function(num){
+        if(this.move(num)){
+            this.randomCard();
+            this.calculateScore();
+            if(this.isFull()){
+                //弹出结束界面
+                //统计得分
+                cc.director.loadScene("EndScene");
+            }
+        }
     },
 
     cardColor: function(col,row){
@@ -287,48 +311,16 @@ cc.Class({
     onKeyDown: function (event) {
         switch(event.keyCode) {
             case cc.KEY.up:
-                if(this.move(0)){
-                    this.randomCard();
-                    this.calculateScore();
-                    if(this.isFull()){
-                        //弹出结束界面
-                        //统计得分
-                    }
-                }
-                console.log('Press up key');
+                this.moveCard(0);
                 break;
             case cc.KEY.down:
-                if(this.move(1)){
-                    this.randomCard();
-                    this.calculateScore();
-                    if(this.isFull()){
-                        //弹出结束界面
-                        //统计得分
-                    }
-                }
-                console.log('Press down key');
+                this.moveCard(1);
                 break;
             case cc.KEY.left:
-                if(this.move(2)){
-                    this.randomCard();
-                    this.calculateScore();
-                    if(this.isFull()){
-                        //弹出结束界面
-                        //统计得分
-                    }
-                }
-                console.log('Press left key');
+                this.moveCard(2);
                 break;
             case cc.KEY.right:
-                if(this.move(3)){
-                    this.randomCard();
-                    this.calculateScore();
-                    if(this.isFull()){
-                        //弹出结束界面
-                        //统计得分
-                    }
-            }
-                console.log('Press right key');
+                this.moveCard(3);
                 break;
         }
     },
@@ -339,5 +331,46 @@ cc.Class({
         //         console.log('release a key');
         //         break;
         // }
+    },
+
+    //触摸事件处理集合
+
+    //开启触摸事件管理
+    TouchManger:function(){
+        this.cardBg.on(cc.Node.EventType.TOUCH_START,this.onTouchStart,this);
+        this.cardBg.on(cc.Node.EventType.TOUCH_END,this.onTouchEnd,this);
+    },
+
+    onTouchStart:function(event){
+        this.startLoaction=event.getLocation();
+        console.log("s->"+this.startLoaction.x);
+    },
+
+    onTouchEnd:function(event){
+        this.endLocation=event.getLocation();
+        console.log("e->"+this.endLocation.x);
+
+        //计算方向
+        var offset_x=this.startLoaction.x-this.endLocation.x;
+        var offset_y=this.startLoaction.y-this.endLocation.y;
+
+        if(Math.abs(offset_x)>Math.abs(offset_y)){
+            if(offset_x>0){
+                //手指左移
+                this.moveCard(2);
+            }else{
+                //手指右移
+                this.moveCard(3);
+            }
+        }else{
+            if(offset_y>0){
+                //手指下移
+                this.moveCard(1);
+            }else{
+                //手指上移
+                this.moveCard(0);
+            }
+        }
     }
+
 });

@@ -3,8 +3,8 @@
   "_name": "displayLogo",
   "_objFlags": 0,
   "_rawFiles": null,
-  "_duration": 1,
-  "sample": 5,
+  "_duration": 0.9,
+  "sample": 10,
   "speed": 1,
   "wrapMode": 2,
   "curveData": {
@@ -14,19 +14,25 @@
           {
             "frame": 0,
             "value": {
-              "__uuid__": "22aec1c8-34e3-4659-bf0e-2c1fbd363cf4"
+              "__uuid__": "54e28201-569f-4bad-84a9-d7be8820eaee"
             }
           },
           {
             "frame": 0.4,
             "value": {
-              "__uuid__": "3e125625-9f08-499e-a3ff-d47a5b93f896"
+              "__uuid__": "9d76b7fa-65a6-4bd7-9103-6a9db3009419"
+            }
+          },
+          {
+            "frame": 0.5,
+            "value": {
+              "__uuid__": "9d76b7fa-65a6-4bd7-9103-6a9db3009419"
             }
           },
           {
             "frame": 0.8,
             "value": {
-              "__uuid__": "22aec1c8-34e3-4659-bf0e-2c1fbd363cf4"
+              "__uuid__": "54e28201-569f-4bad-84a9-d7be8820eaee"
             }
           }
         ]
